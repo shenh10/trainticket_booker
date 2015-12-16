@@ -13,6 +13,7 @@
 - 支持失败次数超过阈值放弃该车次
 - 刷票间隔约1s
 - 支持自动提交
+
 ### 安装条件
 - [Chrome浏览器](https://www.google.com/chrome/browser/desktop/index.html)
 - [Chrome Driver](http://chromedriver.storage.googleapis.com/index.html?path=2.20/)
@@ -43,9 +44,11 @@ cd {YOUR_PATH_TO_THE_SCRIPT}
 cp conf.ini.template conf.ini
 ```
 在conf.ini中设置你的用户名密码，根据注释设定对应参数；此处最重要的是获取你的起始到达站的cookie值,并填在[STATIONCOOKIE]区域下，模板中有广州和北京为示例。获取方法：打开12306 票查询界面，输入你的起始终点站与日期，点击查询。
+<br>
 在Chrome中右键, 选择Inspect，Chrome将弹出开发者工具。
 选择Resources > Cookies > www.12306.cn
-对应'_jc_save_fromStation'和'_jc_save_toStation'的值就是你的起始/终点站的cookie值，将其以‘站名=cookie值’的形式填在[STATIONCOOKIE]区域
+对应'_jc_save_fromStation'和'_jc_save_toStation'的值就是你的起始/终点站的cookie值，将其以‘站名=cookie值’的形式填在[STATIONCOOKIE]区域。
+<br>
 安装好上述依赖之后，运行脚本
 ``` bash
 python crawler.py
@@ -60,12 +63,15 @@ python crawler.py
 ```
 用户便可坐等脚本自动刷新了。若刷到了余票，浏览器自动跳转到提交界面，只需输入验证码点提交即可。
 <br>
-脚本界面此时会显示‘是否抢票成功（Y／N）’，若用户此时已抢到票，输入Y，程序退出；否则输入N，浏览器自动返回查询界面继续刷票。
+脚本界面此时会显示'是否抢票成功(Y/N)'，若用户此时已抢到票，输入Y，程序退出；否则输入N，浏览器自动返回查询界面继续刷票。
+
 ### 退出程序
-按Ctrl－C 退出程序（浏览器窗口随之退出）
+按Ctrl-C 退出程序（浏览器窗口随之退出）
+
 ### To do
 - 包装程序
 - 用户界面
 - 多平台可移植
+
 ### 联系我
 若有仍和疑问、建议或批评，可以给[我](thushenhan@gmail.com)发信。
