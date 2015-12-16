@@ -1,0 +1,36 @@
+[GLOBAL]
+# 12306 用户账号
+username = 
+# 12306 用户密码
+password =
+# 浏览器(需下载对应驱动)
+browser=chrome
+
+[TICKET]
+# 起始站名,多个起始站名用逗号(英文)隔开
+from_station=广州
+# 到达站名,多个到达站名用逗号(英文)隔开
+to_station=北京
+# 是否查询一段时间的火车票情况(Y/N)
+range_query=N
+# 需定的火车票时间。如果想查询某个区间日期(range_query= Y)，在下方填入查询区间最早日期与最晚日期，用逗号隔开，如 
+# date = 2016-02-06, 2016-02-13
+# 如果不查询区间(range_query=N),可将日期赋予date，多个日期用逗号隔开
+date=2016-02-13
+# 如果指定特定列车车次，在下方填入车次名，多个车次逗号隔开
+trains=
+# 乘车席别，与12306上对应表格列名一致
+ticket_type=硬卧
+# 是否是学生，是(Y):否(N)
+student=Y
+# 防止12306虚票情况或排队人数过多，设置tolerance次之后放弃该车次；-1 表示无限制
+tolerance = 2
+# 乘车人，多个乘车人用逗号隔开
+people=
+# 是否设置铃声提醒(Y/N)
+alarm = N
+
+[STATIONCOOKIE]
+# 将车站名与对应cookie填在下方
+广州=%u5E7F%u5DDE%2CGZQ
+北京=%u5317%u4EAC%2CBJP
