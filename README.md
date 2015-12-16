@@ -37,11 +37,12 @@ pip install configparser
 ### 使用方法
 打开terminal，切换到脚本所在目录
 ``` bash
-cd {YOUR_PATH_TO_THE_SCRIPT}
+cd {YOUR_PATH_TO_THE_SCRIPT}/conf
 ```
 从模板拷贝一份设置文件
 ``` bash
 cp conf.ini.template conf.ini
+cd ../
 ```
 在conf.ini中设置你的用户名密码，根据注释设定对应参数；此处最重要的是获取你的起始到达站的cookie值,并填在[STATIONCOOKIE]区域下，模板中有广州和北京为示例。获取方法：打开12306 票查询界面，输入你的起始终点站与日期，点击查询。
 <br>

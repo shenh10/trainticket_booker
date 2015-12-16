@@ -184,13 +184,13 @@ class Ticket(object):
         screen=pygame.display.set_mode([300,300])
         #pygame.display.flip()
         pygame.time.delay(1000)#等待1秒让mixer完成初始化
-        tracker=pygame.mixer.music.load("sound.ogg")
+        tracker=pygame.mixer.music.load("media/sound.ogg")
         #track = pygame.mixer.music.load("sound.ogg")
         pygame.mixer.music.play()
         # while pygame.mixer.music.get_busy():
         #pygame.time.Clock().tick(10)
         running = True
-        img=pygame.image.load("img.jpg")
+        img=pygame.image.load("media/img.jpg")
         while running:
             screen.blit(img,(0,0))
             pygame.display.flip()
@@ -254,7 +254,7 @@ class Ticket(object):
 
 if __name__ == '__main__':
     ##start login
-    ticket_theif = Ticket('./conf.ini') 
+    ticket_theif = Ticket('./conf/conf.ini') 
     try:
         ticket_theif.executor() 
     except KeyboardInterrupt:
