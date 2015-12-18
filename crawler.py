@@ -59,7 +59,7 @@ class Ticket(object):
                         dict1[option] = None
             return dict1
     def daterange(self, start_date, end_date):
-        for n in range(int ((end_date - start_date).days)):
+        for n in range(int ((end_date - start_date).days) + 1):
             yield start_date + timedelta(n) 
 
     def config_parser(self):
@@ -75,39 +75,39 @@ class Ticket(object):
 
     def retrieve_book_options(self):
         login_info=self.ConfigSectionMap('GLOBAL')
-        self.username = login_info['username'] 
-        self.password = login_info['password'] 
+        self.username = login_info['username'].strip() 
+        self.password = login_info['password'].strip()
         self.brower = login_info['browser']
         book_settings = self.ConfigSectionMap('TICKET')
-        self.fromStation = book_settings['from_station'].split(',')
-        self.toStation = book_settings['to_station'].split(',')
-        trains = book_settings['trains'].split(',')
-        if len(trains) == 1 and trains[0].strip() == '':
+        self.fromStation = [ station.strip() for station in book_settings['from_station'].split(',')]
+        self.toStation = [ station.strip() for station in book_settings['to_station'].split(',')]
+        trains = [ train.strip() for train in book_settings['trains'].split(',')]
+        if len(trains) == 1 and trains[0] == '':
             self.trains = []
         else:
             self.trains =  trains
-        self.ticket_type = book_settings['ticket_type'].split(',')
-        rangeQuery = book_settings['range_query']
+        self.ticket_type =[ _type.strip() for _type in book_settings['ticket_type'].split(',')]
+        rangeQuery = book_settings['range_query'].strip()
         if rangeQuery == 'Y':
-            date = book_settings['date'].split(',')
+            date = [ d.strip() for d in book_settings['date'].split(',')]
             if len(date) < 2:
                 print "未设置正确的起至时间"
                 return -1
             else: 
-                start_date = datetime.strptime(date[0].strip(),self.date_format) 
-                end_date = datetime.strptime(date[1].strip(),self.date_format) 
+                start_date = datetime.strptime(date[0],self.date_format) 
+                end_date = datetime.strptime(date[1],self.date_format) 
                 if end_date < start_date:
                     print "查询截止日期不可大于开始日期!"
                     return -1
                 for single_date in self.daterange(start_date, end_date): 
                     self.date.append(single_date.strftime(self.date_format))
         else:
-            self.date = book_settings['date'].split(',')
-        if book_settings['student'] == 'Y':
+            self.date = [ d.strip() for d in book_settings['date'].split(',')]
+        if book_settings['student'].strip() == 'Y':
             self.isStudent = True
         self.tolerance = int(book_settings['tolerance'])
-        self.people = book_settings['people'].split(',')
-        if book_settings['alarm'] == 'Y':
+        self.people = [ people.strip() for people in book_settings['people'].split(',') ]
+        if book_settings['alarm'].strip() == 'Y':
             self.playmusic = True
 
     def login(self):
@@ -130,9 +130,7 @@ class Ticket(object):
     def checkTicket(self, date, fromStation, toStation):
         print 'date: %s, from %s, to %s'%(date, fromStation, toStation)
         self.b.cookies.add({"_jc_save_fromDate":date})
-        ## From : Guangzhou
         self.b.cookies.add({"_jc_save_fromStation":self.station[fromStation]})
-        ## To : Huaihua
         self.b.cookies.add({"_jc_save_toStation":self.station[toStation]})
         self.b.cookies.all()
         self.b.reload()
