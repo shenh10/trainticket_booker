@@ -4,7 +4,7 @@
 2015-12-17 修复配置文件空格问题
 2015-12-17 修复几处bug
 ### 关于该小工具
-该脚本适用于12306刷票，无图形界面，需要安装python。适合Mac与Linux用户及对python有一定了解的用户(Windows下安装python也可)。脚本有一定安装需求，请先配置好环境再运行此脚本。本脚本无法绕过验证码输入，需要用户手动输入验证码。具体功能见下节
+该脚本适用于12306刷票，无图形界面，需要安装python。原理为利用chrome测试工具自动化模拟鼠标点击买票，略慢于基于HTTP Request爬虫模式，优点是对网站升级与框架改变较鲁邦，且免去刷票软件缴费排队的优先级困扰。适合Mac与Linux用户及对python有一定了解的用户(Windows下安装python也可)。脚本有一定安装需求，请先配置好环境再运行此脚本。本脚本无法绕过验证码输入，需要用户手动输入验证码。具体功能见下节
 
 ### 功能介绍
 - 支持多车站(起始、到达) ，脚本将自动查询各个起始终点站的排列组合
@@ -19,7 +19,7 @@
 
 ### 安装条件
 - [Chrome浏览器](https://www.google.com/chrome/browser/desktop/index.html)
-- [Chrome Driver](http://chromedriver.storage.googleapis.com/index.html?path=2.20/)
+- [Chrome Driver](http://chromedriver.storage.googleapis.com/index.html?path=2.29/) (Mac 用户可通过brew install chromedriver安装)
 - python
 - splinter
 - pygame
@@ -32,9 +32,7 @@
 - 安装pip
 - 安装依赖包
 ``` bash
-pip install splinter
-pip install pygame
-pip install configparser
+pip install splinter pygame configparser
 ```
 
 ### 使用方法
