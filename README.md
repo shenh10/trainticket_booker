@@ -22,6 +22,7 @@
 ### 安装条件
 - [Chrome浏览器](https://www.google.com/chrome/browser/desktop/index.html)
 - [Chrome Driver](https://sites.google.com/a/chromium.org/chromedriver/) (Mac 用户可通过brew install chromedriver安装)
+- [Chrome Driver](http://npm.taobao.org/mirrors/chromedriver) (阿里国内的)
 - python 2.7
 - selenium
 - pygame
@@ -29,7 +30,7 @@
 
 ### 安装方法
 - 网上下载对应操作系统的Chrome浏览器并安装
-- 安装Chrome Driver
+- 安装Chrome Driver `解压到程序目录内，或者解压下来加入到 path 里`
 - 安装python(Mac 与Linux一般已预装)
 - 安装pip
 - 安装依赖包
