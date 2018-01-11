@@ -133,13 +133,11 @@ class Ticket(object):
     def page_has_loaded(self):
         #page_state = self.b.evaluate_script("document.readyState")
         #return page_state == 'complete'
-        delay = 6
+        delay = 3
         try:
             myElem = WebDriverWait(self.b, delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'bgc')))
-            print "Page is ready!"
             return True
         except TimeoutException:
-            print "Loading took too much time!"
             return False
 
     def switch_to_order_page(self):
@@ -159,22 +157,16 @@ class Ticket(object):
         if self.isStudent:
             self.b.find_element_by_link_text(u'学生').click()
         self.b.find_element_by_link_text(u"查询").click()
-        while self.page_has_loaded() == False:
-            print 'page loading...'
-            continue
-        all_trains = self.b.find_element_by_id('queryLeftTable').find_elements_by_tag_name('tr')
+        
+        if self.page_has_loaded() == False:
+            return ''
+        all_trains = self.b.find_elements_by_xpath('//table/tbody/tr/td/a[contains(@class, "btn72")]')
         this_train = ''
         for k, train in enumerate(all_trains):
-            tds = train.find_elements_by_tag_name('td')
+            tds = train.find_elements_by_xpath("../../td")
             if tds and len(tds) >= 10:
-                this_train = tds[0].find_element_by_css_selector('a.number').text
-                print this_train 
-                try:
-                    has_ticket=  tds[-1].find_element_by_css_selector("a.btn72")
-                except:
-                    continue
                 if k + 1 < len(all_trains):
-                    this_train = tds[0].find_element_by_css_selector('a.number').text 
+                    this_train = tds[0].text.split('\n')[0] 
                     if len(self.trains) != 0 and this_train not in self.trains:
                         continue
                     if self.tolerance != -1 and this_train in self.blacklist and self.blacklist[this_train] >= self.tolerance:
@@ -183,7 +175,6 @@ class Ticket(object):
                 for cat in self.ticket_type:
                     if cat in self.ticket_index:
                         i = self.ticket_index.index(cat)
-                        print cat, i
                     else:
                         print '无效的席别信息'
                         return 0, ''
@@ -228,12 +219,13 @@ class Ticket(object):
             seat_list = seats.find_elements_by_css_selector("div[style='display: block;']")
             for i,p in enumerate(seat_list):
                 seat_id = '%d%s'%(i, self.seat_type[i % len(self.seat_type)])
-                print seat_id
                 p.find_element_by_id(seat_id).click()
         table.find_element_by_id('qr_submit_id').click()
         return 1
 
     def ring(self):
+        import pdb
+        pdb.set_trace()
         pygame.mixer.pre_init(64000, -16, 2, 4096)
         pygame.init()
         pygame.display.init()
