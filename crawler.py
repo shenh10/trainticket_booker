@@ -4,7 +4,13 @@ import time
 import pygame
 import sys
 import configparser
-from splinter.browser import Browser
+#from splinter.browser import Browser
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+
 from datetime import datetime, timedelta
 
 class Ticket(object):
@@ -16,23 +22,24 @@ class Ticket(object):
         self.settings.read(self.config_file)
         ## environment setting
         self.brower='chrome'
-        self.b = Browser(driver_name=self.brower) 
+        self.b = webdriver.Chrome() #Browser(driver_name=self.brower) 
         self.station={}
         self.url = "https://kyfw.12306.cn/otn/leftTicket/init"
         # 席别类型(对应列标号)
         self.ticket_index = [
                             '',
                             u'商务座',
-                            u'特等座',
                             u'一等座', 
                             u'二等座',
                             u'高级软卧',
                             u'软卧',
+                            u'动卧',
                             u'硬卧',
                             u'软座',
                             u'硬座',
                             u'无座'
                             ]
+        self.seat_type = ['A', 'B', 'C', 'D', 'E']
         self.username = ''
         self.password = ''
         self.date_format='%Y-%m-%d'
@@ -108,89 +115,123 @@ class Ticket(object):
         self.tolerance = int(book_settings['tolerance'])
         self.people = [ people.strip() for people in book_settings['people'].split(',') ]
         if book_settings['alarm'].strip() == 'Y':
+            print('已打开音乐提醒')
             self.playmusic = True
 
     def login(self):
-        self.b.visit(self.url)
-        self.b.find_by_text(u"登录").click()
-        self.b.fill("loginUserDTO.user_name",self.username)
-        self.b.fill("userDTO.password",self.password)
+        self.b.get(self.url)
+        tag_name = u"登录"
+        self.b.find_element_by_link_text(tag_name).click()
+        form = self.b.find_element_by_id("loginForm")
+        username = form.find_elements_by_name("loginUserDTO.user_name")[0]
+        password = form.find_elements_by_name("userDTO.password")[0]
+        username.send_keys(self.username)
+        password.send_keys(self.password)
+        import pdb
         pdb.set_trace()
     
     def page_has_loaded(self):
-        page_state = self.b.evaluate_script("document.readyState")
-        return page_state == 'complete'
+        #page_state = self.b.evaluate_script("document.readyState")
+        #return page_state == 'complete'
+        delay = 6
+        try:
+            myElem = WebDriverWait(self.b, delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'bgc')))
+            print "Page is ready!"
+            return True
+        except TimeoutException:
+            print "Loading took too much time!"
+            return False
 
     def switch_to_order_page(self):
-        order = []
-        while len(order) == 0:
-            order = self.b.find_by_text(u"车票预订")
-        order[0].click()
+        while 1:
+            order = self.b.find_element_by_link_text(u"车票预订")
+            if isinstance(order, webdriver.remote.webelement.WebElement):
+                break
+        order.click()
 
     def checkTicket(self, date, fromStation, toStation):
         print 'date: %s, from %s, to %s'%(date, fromStation, toStation)
-        self.b.cookies.add({"_jc_save_fromDate":date})
-        self.b.cookies.add({"_jc_save_fromStation":self.station[fromStation]})
-        self.b.cookies.add({"_jc_save_toStation":self.station[toStation]})
-        self.b.cookies.all()
-        self.b.reload()
+        self.b.add_cookie({'name': '_jc_save_fromDate', 'value': date})
+        self.b.add_cookie({'name': '_jc_save_fromStation', 'value': self.station[fromStation]})
+        self.b.add_cookie({'name': '_jc_save_toStation', 'value': self.station[toStation]})
+        #self.b.cookies.all()
+        self.b.refresh()
         if self.isStudent:
-            self.b.find_by_text(u'学生').click()
-        self.b.find_by_text(u"查询").click()
-        all_trains = []
+            self.b.find_element_by_link_text(u'学生').click()
+        self.b.find_element_by_link_text(u"查询").click()
         while self.page_has_loaded() == False:
+            print 'page loading...'
             continue
-        while len(all_trains) == 0:
-            all_trains = self.b.find_by_id('queryLeftTable').find_by_tag('tr')
+        all_trains = self.b.find_element_by_id('queryLeftTable').find_elements_by_tag_name('tr')
+        this_train = ''
         for k, train in enumerate(all_trains):
-            tds = train.find_by_tag('td')
+            tds = train.find_elements_by_tag_name('td')
             if tds and len(tds) >= 10:
-                has_ticket= tds.last.find_by_tag('a')
-                if len(has_ticket) != 0:
-                    if k + 1 < len(all_trains):
-                        this_train = all_trains[k+1]['datatran']
-                        if len(self.trains) != 0 and this_train not in self.trains:
-                            continue
-                        if self.tolerance != -1 and this_train in self.blacklist and self.blacklist[this_train] >= self.tolerance:
-                            print u"%s 失败 %d 次, 跳过"%(this_train, self.blacklist[this_train])
-                            continue
-                    for cat in self.ticket_type:
-                        if cat in self.ticket_index:
-                            i = self.ticket_index.index(cat)
+                this_train = tds[0].find_element_by_css_selector('a.number').text
+                print this_train 
+                try:
+                    has_ticket=  tds[-1].find_element_by_css_selector("a.btn72")
+                except:
+                    continue
+                if k + 1 < len(all_trains):
+                    this_train = tds[0].find_element_by_css_selector('a.number').text 
+                    if len(self.trains) != 0 and this_train not in self.trains:
+                        continue
+                    if self.tolerance != -1 and this_train in self.blacklist and self.blacklist[this_train] >= self.tolerance:
+                        print u"%s 失败 %d 次, 跳过"%(this_train, self.blacklist[this_train])
+                        continue
+                for cat in self.ticket_type:
+                    if cat in self.ticket_index:
+                        i = self.ticket_index.index(cat)
+                        print cat, i
+                    else:
+                        print '无效的席别信息'
+                        return 0, ''
+                    if tds[i].text != u'无' and tds[i].text != '--':
+                        if tds[i].text != u'有':
+                            print u'%s 的 %s 有余票 %s 张!'%(this_train, cat ,tds[i].text)
                         else:
-                            print '无效的席别信息'
-                            return 0, ''
-                        if tds[i].text != u'无' and tds[i].text != '--':
-                            if tds[i].text != u'有':
-                                print u'%s 的 %s 有余票 %s 张!'%(this_train, cat ,tds[i].text)
-                            else:
-                                print u'%s 的 %s 有余票若干张!'%(this_train, cat)
-                            self.find_ticket = 1
-                            tds.last.click()
-                            break
+                            print u'%s 的 %s 有余票若干张!'%(this_train, cat)
+                        self.find_ticket = 1
+                        tds[-1].click()
+                        break
             if self.find_ticket:
                 break
         return this_train
 
-    def book(self):
+    def book(self, train):
         while self.page_has_loaded() == False:
             continue
         if len(self.people) == 0:
             print '没有选择乘车人!'
             return 1
-        more = []
-        while len(more) == 0:
-            more = self.b.find_by_text(u"更多")
-        more[0].click()
-        person = []
+        try:
+            more = self.b.find_element_by_link_text(u"更多")
+            more.click()
+        except:
+            pass
         people = self.people
-        while len(person) == 0:
-            person=self.b.find_by_xpath('//ul[@id="normal_passenger_id"]/li/label[contains(text(),"%s")]'%people[0])
+        assert len(people) > 0, '至少提供一个乘客信息' 
+        try:
+            person=self.b.find_element_by_xpath('//ul[@id="normal_passenger_id"]/li/label[contains(text(),"%s")]'%people[0])
+        except:
+            print u'没找到乘客%s'%people[0]
         for p in people:
-            self.b.find_by_xpath('//ul[@id="normal_passenger_id"]/li/label[contains(text(),"%s")]'%p).click()
-            if self.b.find_by_xpath('//div[@id="dialog_xsertcj"]').visible:
-                self.b.find_by_xpath('//div[@id="dialog_xsertcj"]/div/div/div/a[text()="确认"]').click()
-            return 1
+            self.b.find_element_by_xpath('//ul[@id="normal_passenger_id"]/li/label[contains(text(),"%s")]'%p).click()
+            style = self.b.find_element_by_xpath('//div[@id="dialog_xsertcj"]').get_attribute('style')
+            if not ('display' in style and 'none' in style):
+                self.b.find_element_by_xpath('//div[@id="dialog_xsertcj"]/div/div/div/a[text()="确认"]').click()
+        self.b.find_element_by_id('submitOrder_id').click()
+        table = self.b.find_element_by_id('checkticketinfo_id')
+        if train.startswith('G') or  train.startswith('C') or  train.startswith('D'):
+            seats = table.find_element_by_id('id-seat-sel')
+            seat_list = seats.find_elements_by_css_selector("div[style='display: block;']")
+            for i,p in enumerate(seat_list):
+                seat_id = '%d%s'%(i, self.seat_type[i % len(self.seat_type)])
+                print seat_id
+                p.find_element_by_id(seat_id).click()
+        table.find_element_by_id('qr_submit_id').click()
+        return 1
 
     def ring(self):
         pygame.mixer.pre_init(64000, -16, 2, 4096)
@@ -234,17 +275,18 @@ class Ticket(object):
                         if self.find_ticket:
                             break
                     except KeyboardInterrupt:
-                        self.b.find_by_text(u'退出').click()
+                        self.b.find_element_by_link_text(u'退出').click()
                         sys.exit()
-                    except:
+                    except {IOError, RuntimeError, TypeError, NameError} as e:
+                        print e
                         continue
             # book ticket for target people
             self.find_ticket = 0
             while self.find_ticket == 0:
                 try:
-                    self.find_ticket = self.book() 
+                    self.find_ticket = self.book(this_train) 
                 except KeyboardInterrupt:
-                    self.b.find_by_text(u'退出').click()
+                    self.b.find_element_by_link_text(u'退出').click()
                     sys.exit()
                 except:
                     continue
@@ -262,16 +304,18 @@ class Ticket(object):
                     else:
                         self.blacklist[this_train] = 1
                     print u"%s 失败 %d 次"%(this_train, self.blacklist[this_train])
-                    self.b.back()
-                    self.b.reload()
+                    self.b.get(self.url)
+                    #self.b.refresh()
                 else:
                     input_var = ''
                     continue
-        self.b.find_by_text(u'退出').click()
+        self.b.find_element_by_link_text(u'退出').click()
 
 if __name__ == '__main__':
     ##start login
-    ticket_theif = Ticket('./conf/conf.ini') 
+    assert len(sys.argv) == 2, 'should provide the path of config file.'
+    conf_file = sys.argv[1]
+    ticket_theif = Ticket(conf_file) 
     try:
         ticket_theif.executor() 
     except KeyboardInterrupt:

@@ -1,8 +1,10 @@
 火车票订票助手(python版)
 ===================================
 ### 更新
+2018-01-11 splinter改为selenium, 修改座位种类，添加对选座的支持（默认连续坐席）
 2015-12-17 修复配置文件空格问题
 2015-12-17 修复几处bug
+
 ### 关于该小工具
 该脚本适用于12306刷票，无图形界面，需要安装python。原理为利用chrome测试工具自动化模拟鼠标点击买票，略慢于基于HTTP Request爬虫模式，优点是对网站升级与框架改变较鲁邦，且免去刷票软件缴费排队的优先级困扰。适合Mac与Linux用户及对python有一定了解的用户(Windows下安装python也可)。脚本有一定安装需求，请先配置好环境再运行此脚本。本脚本无法绕过验证码输入，需要用户手动输入验证码。具体功能见下节
 
@@ -19,9 +21,9 @@
 
 ### 安装条件
 - [Chrome浏览器](https://www.google.com/chrome/browser/desktop/index.html)
-- [Chrome Driver](http://chromedriver.storage.googleapis.com/index.html?path=2.29/) (Mac 用户可通过brew install chromedriver安装)
-- python
-- splinter
+- [Chrome Driver](https://sites.google.com/a/chromium.org/chromedriver/) (Mac 用户可通过brew install chromedriver安装)
+- python 2.7
+- selenium
 - pygame
 - configparser
 
@@ -32,7 +34,7 @@
 - 安装pip
 - 安装依赖包
 ``` bash
-pip install splinter pygame configparser
+pip install selenium pygame configparser
 ```
 
 ### 使用方法
@@ -53,7 +55,7 @@ cd ../
 <br>
 安装好上述依赖之后，运行脚本
 ``` bash
-python crawler.py
+python crawler.py [config_file_path]
 ```
 浏览器将自动跳转到登陆界面（用户名密码已填好），此时脚本停在了调试暂停状态
 ``` bash
