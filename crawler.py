@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-  
+import sys     
+reload(sys) # Python2.5 初始化后会删除 sys.setdefaultencoding 这个方法，我们需要重新载入     
+sys.setdefaultencoding('utf-8')
 import pdb
 import time
 import pygame
@@ -12,14 +15,19 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 
 from datetime import datetime, timedelta
+import pdb
+
+import codecs # 解决 gbk 编码问题
 
 class Ticket(object):
     def __init__(self, config_file):
         ## config parser setting
         self.config_file = config_file
         self.settings = configparser.ConfigParser()
-        self.settings._interpolation = configparser.ExtendedInterpolation()
-        self.settings.read(self.config_file)
+        # self.settings._interpolation = configparser.ExtendedInterpolation()
+        # self.settings.read(self.config_file)
+        # 解决 gbk 编码问题
+        self.settings.readfp(codecs.open(self.config_file, "r", "utf-8-sig"))
         ## environment setting
         self.brower='chrome'
         self.b = webdriver.Chrome() #Browser(driver_name=self.brower) 
