@@ -23,7 +23,7 @@ class Ticket(object):
     def __init__(self, config_file):
         ## config parser setting
         self.config_file = config_file
-        self.settings = configparser.ConfigParser()
+        self.settings = configparser.RawConfigParser()
         # self.settings._interpolation = configparser.ExtendedInterpolation()
         # self.settings.read(self.config_file)
         # 解决 gbk 编码问题
